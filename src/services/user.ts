@@ -2,18 +2,18 @@ import { IRegisterService } from "./register";
 import { IAuthService } from "./auth";
 
 export interface IUserService {
-    register(username: string, password: string): void;
-    login(username: string, password: string): boolean;
+    register(username: string, password: string): Promise<void>;
+    login(username: string, password: string): Promise<boolean>;
 }
 
 export class UserService implements IUserService {
     constructor(private registerService: IRegisterService, private authService: IAuthService) {}
 
-    register(username: string, password: string): void {
-        this.registerService.register(username, password);
+    async register(username: string, password: string): Promise<void> {
+        await this.registerService.register(username, password);
     }
 
-    login(username: string, password: string): boolean {
+    async login(username: string, password: string): Promise<boolean> {
         return this.authService.login(username, password);
     }
 }

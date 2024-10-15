@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.0",
+    "level-ts": "^2.1.0",
     "nodemon": "^3.1.6"
   },
   "devDependencies": {

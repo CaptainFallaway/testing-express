@@ -1,30 +1,45 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { UserService, RegisterService, AuthService } from "./services";
-import { UserRepository } from "./storage";
+import { UserRepository, LevelStorage } from "./storage";
+
+const PORT = 3000;
 
 const app = express();
-const userRepository = new UserRepository();
+let count = 0;
+
+const storage = new LevelStorage("./db");
+const userRepository = new UserRepository(storage);
 const userService = new UserService(new RegisterService(userRepository), new AuthService(userRepository));
-const PORT = 3000;
 
 app.use(express.static("public"));
 app.use(["/register", "/login"], express.urlencoded({ extended: true }));
-
-app.post("/register", (req: Request, res: Response) => {
-  const { username, password } = req.body;
-  userService.register(username, password);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  count++;
+  console.log(count);
+  next();
 });
 
-app.post("/login", (req: Request, res: Response) => {
+app.post("/register", async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+  await userService.register(username, password);
+  res.status(200).send("Success");
+});
+
+app.post("/login", async (req: Request, res: Response) => {
   const { username, password } = req.body;
   
-  const authed = userService.login(username, password);
+  const authed = await userService.login(username, password);
 
   if (authed) {
     res.status(200).send("Success");
   } else {
     res.status(401).send("Unauthorized");
   }
+});
+
+app.get("/users", async (req: Request, res: Response) => {
+  const users = await userRepository.getAllUsers();
+  res.status(200).json(users);
 });
 
 app.listen(PORT, () => {
